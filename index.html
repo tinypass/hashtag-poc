@@ -2,79 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <link href="/node_modules/bootstrap/dist/css/bootstrap.min.css" type="text/css" rel="stylesheet"/>
-    <script type="text/javascript" src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <link href="/product.css" type="text/css" rel="stylesheet"/>
     <script type="text/javascript" src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
     <!-- There's no need to load GTP dynamically -->
     <script type="text/javascript" src="https://www.googletagservices.com/tag/js/gpt.js"></script>
+
+
+    <script type="text/javascript" src="/lib/modal.min.js"></script>
+    <script>
+        jQuery(function ($) {
+            modal.init('//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js', [{
+                code: "ppb-ad-1",
+                mediaTypes: {banner: {sizes: [970, 250]}},
+                bids: [{bidder: "appnexus", params: {placementId: 13144370}}]
+            }], '/33049290/PIANO', ["cars", "trains"], ["alpha-1", "beta-2"], "http://example.com", "http://thechive.com/subscribe");
+        });
+    </script>
+
     <title>Document</title>
     <script>
         function loadLibraries() {
-            // load Prebid library
-            // this is the "kitchen sink" version of Prebid for testing
-            // we will send you a custom stripped-down version that has
-            // a smaller footprint for production
-            var s = document.createElement("script");
-            s.src = "//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js";
-            s.type = "text/javascript";
-            s.async = true;
-            document.getElementsByTagName("head")[0].appendChild(s);
-
-
-            // the ad size we want to render
-            var sizes = [970, 250];
-
-            // the ad networks that are bidding
-            // currently 'AppNexus', but more IDs follow here
-            var adUnits = [
-                {
-                    code: "ad-1",
-                    mediaTypes: {
-                        banner: {
-                            sizes: sizes
-                        }
-                    },
-                    bids: [
-                        {
-                            bidder: "appnexus",
-                            params: {
-                                placementId: 13144370
-                            }
-                        }
-                    ]
-                }
-            ];
-
-            // this initiates PrebidJS
-            window.pbjs = window.pbjs || {};
-            pbjs.que = pbjs.que || [];
-            pbjs.que.push(function () {
-                pbjs.addAdUnits(adUnits);
-            });
-
-            // this initiates the Google Ad library called "GPT"
-            window.googletag = window.googletag || {};
-            googletag.cmd = googletag.cmd || [];
-
-            // GPT setup
-
-
-            googletag.cmd.push(function () {
-
-                var mapping = googletag.sizeMapping().addSize([1290, 0], [970, 250]).addSize([0, 0], [300, 250]).build();
-                googletag.defineSlot('/33049290/PIANO', mapping, 'ad-1').defineSizeMapping(mapping).addService(googletag.pubads())
-                googletag.pubads().setCentering(true);
-                googletag.pubads().collapseEmptyDivs();
-                googletag.pubads().enableSingleRequest();
-                googletag.pubads().disableInitialLoad();
-                googletag.pubads().setTargeting("interests", ["cars", "trains"]);
-                googletag.pubads().setTargeting("segments", ["alpha-1", "beta-2"]);
-                googletag.pubads().setTargeting("url", "http://example.com");
-                googletag.enableServices();
-            });
-
             function debounce(func, wait, immediate) {
                 var timeout;
                 return function () {
@@ -112,302 +64,250 @@
 
             // register the listener
             window.addEventListener('resize', refreshOnSizeChange);
-
-            // OPTIONAL
-            // setup a hook to be notified when the ad has rendered
-            googletag.cmd.push(function () {
-                googletag
-                    .pubads()
-                    .addEventListener("slotRenderEnded", function (event) {
-                        if (event.isEmpty) {
-                            // do something when no ads are available
-                            // this branch can't happen if we setup house ads
-                            return;
-                        }
-                        // optionally do something with the slot
-                        var slot = event.slot;
-                        var divId = slot.getSlotElementId();
-                        var domElement = document.getElementById(divId);
-                        console.log(domElement);
-                    });
-            });
-
-            // OPTIONAL
-            // setup a hook to be notified when a prebid bid is received
-            // this object will contain the CPM of the bid (if any)
-            pbjs.que.push(function () {
-                pbjs.onEvent("bidResponse", function (event) {
-                    console.log(event);
-                });
-            });
         }
-
-
-        function showAd(selector) {
-            // place our ad after the given selector
-            var div = document.createElement("div");
-            div.setAttribute("id", "ad-1");
-            document.querySelectorAll(selector)[0].appendChild(div);
-
-            // configureable timeout
-            var PREBID_TIMEOUT = 1000;
-            var FAILSAFE_TIMEOUT = 3000;
-
-            // callback when header bidding ends or timeout occurs
-            // the "refresh()" function is what REALLY shows the ad
-            function initAdserver() {
-                if (pbjs.initAdserverSet) return;
-                pbjs.initAdserverSet = true;
-                googletag.cmd.push(function () {
-                    pbjs.que.push(function () {
-                        var slots = googletag
-                            .pubads()
-                            .getSlots()
-                            .filter(function (slot) {
-                                return slot.getSlotElementId() == "ad-1";
-                            });
-                        pbjs.setTargetingForGPTAsync();
-                        googletag.pubads().refresh(slots);
-                    });
-                });
-            }
-
-            // initiates the header bidding request to
-            // each ad network asking for their best bid
-            pbjs.que.push(function () {
-                pbjs.requestBids({
-                    bidsBackHandler: initAdserver,
-                    timeout: PREBID_TIMEOUT
-                });
-            });
-
-            // catchall timeout, to make sure we show an ad, even
-            // if header bidding fails or hits an error
-            setTimeout(function () {
-                initAdserver();
-            }, FAILSAFE_TIMEOUT);
-        }
-
-        loadLibraries();
-
     </script>
-    <script id="liftigniter-received-json">
-        [{
-            "labelName": "sports",
-            "labelSlug": "sports",
-            "labelLink": "http://stage.thechive.com/category/sports/",
-            "categorySlug": "",
-            "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
-            "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
-            "author": "chiveadmin",
-            "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
-            "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
-            "description": "",
-            "tag": "trending hot",
-            "datetime": "2018-10-31T10:36:57+00:00",
-            "section": "Chive Everywhere",
-            "authorURL": "http://stage.thechive.com/author/chiveadmin/",
-            "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
-            "postId": "1915866",
-            "labelVariant": "galleries",
-            "category": "Chive Everywhere",
-            "title": "When we throw a party on game day, we really go for it (35 Photos)",
-            "mainCategoryID": 162,
-            "type": "single",
-            "rank": 1,
-            "id": 0,
-            "authorName": "chiveadmin"
-        }, {
-            "labelName": "sports",
-            "labelSlug": "sports",
-            "labelLink": "http://stage.thechive.com/category/sports/",
-            "categorySlug": "",
-            "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
-            "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
-            "author": "chiveadmin",
-            "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
-            "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
-            "description": "",
-            "tag": "trending hot",
-            "datetime": "2018-10-31T10:36:57+00:00",
-            "section": "Chive Everywhere",
-            "authorURL": "http://stage.thechive.com/author/chiveadmin/",
-            "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
-            "postId": "1915866",
-            "labelVariant": "galleries",
-            "category": "Chive Everywhere",
-            "title": "When we throw a party on game day, we really go for it (35 Photos)",
-            "mainCategoryID": 162,
-            "type": "single",
-            "rank": 1,
-            "id": 0,
-            "authorName": "chiveadmin"
-        }, {
-            "labelName": "sports",
-            "labelSlug": "sports",
-            "labelLink": "http://stage.thechive.com/category/sports/",
-            "categorySlug": "",
-            "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
-            "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
-            "author": "chiveadmin",
-            "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
-            "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
-            "description": "",
-            "tag": "trending hot",
-            "datetime": "2018-10-31T10:36:57+00:00",
-            "section": "Chive Everywhere",
-            "authorURL": "http://stage.thechive.com/author/chiveadmin/",
-            "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
-            "postId": "1915866",
-            "labelVariant": "galleries",
-            "category": "Chive Everywhere",
-            "title": "When we throw a party on game day, we really go for it (35 Photos)",
-            "mainCategoryID": 162,
-            "type": "single",
-            "rank": 1,
-            "id": 0,
-            "authorName": "chiveadmin"
-        }]
-    </script>
+
 </head>
 
 <body>
-<script>
-
-    var addStyles = () => {
-        var styleNode = document.createElement("div");
-        styleNode.innerHTML = ` <style>
-
-      								    	  </style>`;
-        document.body.appendChild(styleNode);
-    };
-
-    var addNonLoyalContent = () => {
-        var modal = document.createElement(`div`);
-        modal.className = "modal";
-        modal.innerHTML = `<div class="modal-content" id="rec-modal">
-                                <div class="pn-header">
-                                 <button class="pn-modal__close unbutton" id="close">
-                                  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.38464 0L0 1.38477L7.6153 9L0 16.6152L1.38464 18L9 10.3848L16.6154 18L18 16.6157L10.3846 9L18.0001 1.38477L16.6154 0L8.99988 7.61523L1.38464 0Z"/></svg>
-                                </button>
-                                    <img class="pn-header__background" src="https://i.piano.io/managedservices/the-washington-times/theChive_Logo.svg" width="173" height="36.18" alt="">
-                                </div>                                
-                                <div class="content">
-                                  <h1 class="h1">Don't miss our most popular &#x1F600;Humor, &#x1F525;Hotness and &#x1F397;Humanity posts!</h1>
-                                </div>                                  
-                                <div id="li_recommended_content">                                      
-                                </div>
-                                <div id="ad-container">
-                                </div>
-                                <p class="ad_text">ADVERTISEMENT</p>
-                            </div>`;
-
-        document.body.appendChild(modal);
-        closeButton = document.getElementById("close");
-
-        closeButton.addEventListener("click", function () {
-            modal.style.display = "none";
-        });
-    };
-    var addLoyalContent = () => {
-        var modal = document.createElement(`div`);
-        modal.className = "modal";
-        modal.innerHTML = `<div class="modal-content" id="rec-modal">
-                                <div class="pn-header">
-                                 <button class="pn-modal__close unbutton" id="close">
-                                  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.38464 0L0 1.38477L7.6153 9L0 16.6152L1.38464 18L9 10.3848L16.6154 18L18 16.6157L10.3846 9L18.0001 1.38477L16.6154 0L8.99988 7.61523L1.38464 0Z"/></svg>
-                                </button>
-                                    <img class="pn-header__background" src="https://i.piano.io/managedservices/the-washington-times/theChive_Logo.svg" width="173" height="36.18" alt="">
-                                </div>                                
-                                <div class="content">
-                                  <h1 class="h1">Don't miss our most popular &#x1F600;Humor, &#x1F525;Hotness and &#x1F397;Humanity posts!</h1>
-                                </div>                                  
-                                <div id="li_recommended_content">                                      
-                                </div>
-                                <div class="join-now">
-                                  <p class="CTA_text">Get your chive on. Join now.</p>
-                                  <button class="pn-modal__join" type="button" id="subscribe" external-event="offer-join-now">BECOME A MEMBER</button>
-                                  </div>
-                                  <div class="pn-modal__footer">
-                                  </div>
-                                </div>
-
-                            </div>`;
-
-        document.body.appendChild(modal);
-        closeButton = document.getElementById("close");
-
-        closeButton.addEventListener("click", function () {
-            modal.style.display = "none";
-        });
-    };
-
-    var logPianoConversion = () => {
-        console.log("Conversion");
-    };
-
-    var parseLiftignite = () => {
-        var data = document.getElementById('liftigniter-received-json')
-        var liJsonArray = JSON.parse(data.innerText);
-        console.log(liJsonArray)
-        liJsonArray.forEach((article) => {
-            createArticleCard(article)
-        })
-
-    }
-
-    var createArticleCard = (article) => {
-        console.log(article)
-
-        var card = document.createElement('div')
-        card.className = "card"
-        card.innerHTML += ` 
-                                <a href="${article.url}"> <img class="img" src="${article.image}" alt="Avatar" style="width:100%">
-                                <h4><b>${article.title}</b></h4></a>
-                            `
-
-        appendArticle(card)
-    }
-
-    var appendArticle = (card) => {
-        var articleContainer = document.getElementById('li_recommended_content')
-        articleContainer.appendChild(card)
-    }
-
-    var createAdModal = function () {
-        addStyles();
-        addNonLoyalContent();
-        parseLiftignite();
-        showAd("#ad-container");
-    };
-
-    var createSubscribeModal = function () {
-        addStyles();
-        addLoyalContent();
-        parseLiftignite();
-    };
-
+<script id="liftigniter-received-json">
+    [{
+        "labelName": "sports",
+        "labelSlug": "sports",
+        "labelLink": "http://stage.thechive.com/category/sports/",
+        "categorySlug": "",
+        "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
+        "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
+        "author": "chiveadmin",
+        "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
+        "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
+        "description": "",
+        "tag": "trending hot",
+        "datetime": "2018-10-31T10:36:57+00:00",
+        "section": "Chive Everywhere",
+        "authorURL": "http://stage.thechive.com/author/chiveadmin/",
+        "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
+        "postId": "1915866",
+        "labelVariant": "galleries",
+        "category": "Chive Everywhere",
+        "title": "When we throw a party on game day, we really go for it (35 Photos)",
+        "mainCategoryID": 162,
+        "type": "single",
+        "rank": 1,
+        "id": 0,
+        "authorName": "chiveadmin"
+    }, {
+        "labelName": "sports",
+        "labelSlug": "sports",
+        "labelLink": "http://stage.thechive.com/category/sports/",
+        "categorySlug": "",
+        "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
+        "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
+        "author": "chiveadmin",
+        "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
+        "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
+        "description": "",
+        "tag": "trending hot",
+        "datetime": "2018-10-31T10:36:57+00:00",
+        "section": "Chive Everywhere",
+        "authorURL": "http://stage.thechive.com/author/chiveadmin/",
+        "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
+        "postId": "1915866",
+        "labelVariant": "galleries",
+        "category": "Chive Everywhere",
+        "title": "When we throw a party on game day, we really go for it (35 Photos)",
+        "mainCategoryID": 162,
+        "type": "single",
+        "rank": 1,
+        "id": 0,
+        "authorName": "chiveadmin"
+    }, {
+        "labelName": "sports",
+        "labelSlug": "sports",
+        "labelLink": "http://stage.thechive.com/category/sports/",
+        "categorySlug": "",
+        "authorImage": "http://1.gravatar.com/avatar/4290feb654c5e9b2bd07c074af21dba1?s=96&d=identicon&r=x",
+        "authorUrl": "http://stage.thechive.com/author/chiveadmin/",
+        "author": "chiveadmin",
+        "url": "http://stage.thechive.com/2018/10/31/when-we-throw-a-party-on-game-day-we-really-go-for-it-36-photos/",
+        "image": "http://stage.thechive.com/wp-content/uploads/2018/10/Tailgate-035-copy.jpg?quality=100&strip=info",
+        "description": "",
+        "tag": "trending hot",
+        "datetime": "2018-10-31T10:36:57+00:00",
+        "section": "Chive Everywhere",
+        "authorURL": "http://stage.thechive.com/author/chiveadmin/",
+        "mainCategoryURL": "http://stage.thechive.com/category/chive-everywhere/",
+        "postId": "1915866",
+        "labelVariant": "galleries",
+        "category": "Chive Everywhere",
+        "title": "When we throw a party on game day, we really go for it (35 Photos)",
+        "mainCategoryID": 162,
+        "type": "single",
+        "rank": 1,
+        "id": 0,
+        "authorName": "chiveadmin"
+    }]
 </script>
+<nav class="site-header sticky-top py-1">
+    <div class="container d-flex flex-column flex-md-row justify-content-between">
+        <a class="py-2" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="d-block mx-auto">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+            </svg>
+        </a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Tour</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Product</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Features</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Enterprise</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Support</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Pricing</a>
+        <a class="py-2 d-none d-md-inline-block" href="#">Cart</a>
+    </div>
+</nav>
 
-<h2>Demo</h2>
-<p>
-    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Expedita,
-    voluptate esse quam adipisci, fugiat eos aperiam asperiores sit doloremque
-    tempora veritatis eius, exercitationem qui et totam nesciunt quo. Non,
-    ipsum.
-</p>
-<p>
-    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Expedita,
-    voluptate esse quam adipisci, fugiat eos aperiam asperiores sit doloremque
-    tempora veritatis eius, exercitationem qui et totam nesciunt quo. Non,
-    ipsum.
-</p>
-<p>
-    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Expedita,
-    voluptate esse quam adipisci, fugiat eos aperiam asperiores sit doloremque
-    tempora veritatis eius, exercitationem qui et totam nesciunt quo. Non,
-    ipsum.
-</p>
+<div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-light">
+    <div class="col-md-5 p-lg-5 mx-auto my-5">
+        <h1 class="display-4 font-weight-normal">Punny headline</h1>
+        <p class="lead font-weight-normal">And an even wittier subheading to boot. Jumpstart your marketing efforts with
+            this example based on Apple's marketing pages.</p>
+        <a class="btn btn-outline-secondary" href="#">Coming soon</a>
+    </div>
+    <div class="product-device box-shadow d-none d-md-block"></div>
+    <div class="product-device product-device-2 box-shadow d-none d-md-block"></div>
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+    <div class="bg-dark mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+        <div class="my-3 py-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-light box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 p-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-dark box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 p-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-dark box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+    <div class="bg-primary mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center text-white overflow-hidden">
+        <div class="my-3 py-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-light box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 p-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-white box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 py-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-white box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+</div>
+
+<div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 p-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-white box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+    <div class="bg-light mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
+        <div class="my-3 py-3">
+            <h2 class="display-5">Another headline</h2>
+            <p class="lead">And an even wittier subheading.</p>
+        </div>
+        <div class="bg-white box-shadow mx-auto" style="width: 80%; height: 300px; border-radius: 21px 21px 0 0;"></div>
+    </div>
+</div>
+
+<footer class="container py-5">
+    <div class="row">
+        <div class="col-12 col-md">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="d-block mb-2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+                <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+                <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+                <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+                <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+                <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+            </svg>
+            <small class="d-block mb-3 text-muted">&copy; 2017-2018</small>
+        </div>
+        <div class="col-6 col-md">
+            <h5>Features</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Cool stuff</a></li>
+                <li><a class="text-muted" href="#">Random feature</a></li>
+                <li><a class="text-muted" href="#">Team feature</a></li>
+                <li><a class="text-muted" href="#">Stuff for developers</a></li>
+                <li><a class="text-muted" href="#">Another one</a></li>
+                <li><a class="text-muted" href="#">Last time</a></li>
+            </ul>
+        </div>
+        <div class="col-6 col-md">
+            <h5>Resources</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Resource</a></li>
+                <li><a class="text-muted" href="#">Resource name</a></li>
+                <li><a class="text-muted" href="#">Another resource</a></li>
+                <li><a class="text-muted" href="#">Final resource</a></li>
+            </ul>
+        </div>
+        <div class="col-6 col-md">
+            <h5>Resources</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Business</a></li>
+                <li><a class="text-muted" href="#">Education</a></li>
+                <li><a class="text-muted" href="#">Government</a></li>
+                <li><a class="text-muted" href="#">Gaming</a></li>
+            </ul>
+        </div>
+        <div class="col-6 col-md">
+            <h5>About</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Team</a></li>
+                <li><a class="text-muted" href="#">Locations</a></li>
+                <li><a class="text-muted" href="#">Privacy</a></li>
+                <li><a class="text-muted" href="#">Terms</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
 
 <script>
     (function (src) {
@@ -421,5 +321,6 @@
         "https://sandbox.tinypass.com/xbuilder/experience/load?aid=oiGmjC8JwK"
     );
 </script>
+
 </body>
 </html>
