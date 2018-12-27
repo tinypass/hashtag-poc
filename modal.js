@@ -12,11 +12,11 @@ class modal {
     }
 
     static createAdModal(trackingId) {
-        let newModal = new modal('ad', trackingId)
+        new modal('ad', trackingId)
     }
 
     static createSubscribeModal(trackingId) {
-        let newModal = new modal('subscribe', trackingId)
+        new modal('subscribe', trackingId)
     }
 
     _createModal(type, trackingId) {
@@ -105,7 +105,7 @@ class modal {
 
     _initAdServer() {
         let self = this;
-        if (pbjs_piano.initAdserverSet) return;
+        // if (pbjs_piano.initAdserverSet) return;
         pbjs_piano.initAdserverSet = true;
         googletag.cmd.push(function () {
             pbjs_piano.que.push(function () {
@@ -167,7 +167,8 @@ class modal {
             let li_json = JSON.parse(li_tag.innerText);
             if (li_num_posts !== li_json.length) {
                 li_json.forEach((article) => {
-                    self._createArticleCard(base, article)
+                    self._createArticleCard(base, article);
+                    clearInterval(li_timer);
                 })
             }
 
