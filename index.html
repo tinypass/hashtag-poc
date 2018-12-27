@@ -13,11 +13,13 @@
     <script type="text/javascript" src="https://www.googletagservices.com/tag/js/gpt.js"></script>
 
 
+    <!-- Load modal source. The unminified version is /lib/modal.js -->
     <script type="text/javascript" src="/lib/modal.min.js"></script>
+    <!-- Init modal values -->
     <script>
         jQuery(function ($) {
             modal.init('//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js', [{
-                code: "ppb-ad-1",
+                code: "ad-1",
                 mediaTypes: {banner: {sizes: [970, 250]}},
                 bids: [{bidder: "appnexus", params: {placementId: 13144370}}]
             }], '/33049290/PIANO', ["cars", "trains"], ["alpha-1", "beta-2"], "http://example.com", "http://thechive.com/subscribe");
@@ -25,48 +27,6 @@
     </script>
 
     <title>Document</title>
-    <script>
-        function loadLibraries() {
-            function debounce(func, wait, immediate) {
-                var timeout;
-                return function () {
-                    var context = this, args = arguments;
-                    var later = function () {
-                        timeout = null;
-                        if (!immediate) func.apply(context, args);
-                    };
-                    var callNow = immediate && !timeout;
-                    clearTimeout(timeout);
-                    timeout = setTimeout(later, wait);
-                    if (callNow) func.apply(context, args);
-                };
-            };
-
-            // detect changes to the viewport
-            var oldSize = document.documentElement.clientWidth
-            console.log(oldSize)
-            var refreshOnSizeChange = debounce(function () {
-                var newWidth = document.getElementById("rec-modal").getBoundingClientRect().width
-
-                // if we crossed a threshold, call refresh() to get a new ad
-                console.log("debounce called")
-                console.log(document.getElementById("rec-modal").getBoundingClientRect().width)
-                if (oldSize < 970 && newWidth >= 970) {
-                    oldSize = newWidth;
-                    console.log("refreshed greater than 972")
-                    googletag.pubads().refresh()
-                } else if (oldSize >= 970 && newWidth < 970) {
-                    oldSize = newWidth;
-                    console.log("refreshed less than 972")
-                    googletag.pubads().refresh()
-                }
-            }, 250);
-
-            // register the listener
-            window.addEventListener('resize', refreshOnSizeChange);
-        }
-    </script>
-
 </head>
 
 <body>
