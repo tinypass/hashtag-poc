@@ -188,6 +188,17 @@ class modal {
         window.pbjs_piano = window.pbjs_piano || {};
         pbjs_piano.que = pbjs_piano.que || [];
         pbjs_piano.que.push(function () {
+            pbjs_piano.setConfig({
+                sizeConfig: [{
+                    mediaQuery: '(min-width: 1290px)',
+                    sizesSupported: [[970, 250]],
+                    labels: ["desktop"]
+                }, {
+                    mediaQuery: '(min-width: 0px) and (max-width: 1289px)',
+                    sizesSupported: [[300, 250]],
+                    labels: ["mobile"]
+                }]
+            });
             pbjs_piano.addAdUnits(adUnits);
         });
 

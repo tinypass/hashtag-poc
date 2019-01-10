@@ -20,7 +20,7 @@
         jQuery(function ($) {
             modal.init('//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js', [{
                 code: "ad-1",
-                mediaTypes: {banner: {sizes: [970, 250]}},
+                mediaTypes: {banner: {sizes: [[300, 250], [970, 250]]}},
                 bids: [{bidder: "appnexus", params: {placementId: 13144370}}]
             }], '/33049290/PIANO', ["cars", "trains"], ["alpha-1", "beta-2"], "http://example.com", "http://thechive.com/subscribe");
         });
