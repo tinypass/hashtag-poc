@@ -3,12 +3,31 @@ class modal {
         this._createModal(type, trackingId)
     }
 
-    static init(pbjsSrc, adUnits, adService, interestsTargeting, segmentsTargeting, urlTargeting, subscribeLink) {
+	static init(interestsTargeting, segmentsTargeting, urlTargeting, subscribeLink) {
         this.prototype.adSlotId = 'ppb-ad-1';
         this.prototype.externalEventId = 'offer-join-now';
         this.prototype.subscribeLink = subscribeLink;
-        this.loadPB(pbjsSrc, adUnits, adService, interestsTargeting, segmentsTargeting, urlTargeting);
-        this.addCss();
+		const pbjsSrc = 's3.amazonaws.com/piano-prebid/piano/pbjs_piano.js';
+		const adUnits = [{
+			code: "ad-1",
+            mediaTypes: {banner: {sizes: [[300, 250], [970, 250]]}},
+            bids: [{
+                bidder: "appnexus",
+                params: {
+                    placementId: 14849878
+               }
+            }, {
+               bidder: 'rubicon',
+               params: {
+                   accountId: '13322',
+                   siteId: '239774',
+                   zoneId: '1183570'
+               }
+           }]
+		}];
+		const adService = '/33049290/PIANO';
+		this.loadPB(pbjsSrc, adUnits, adService, interestsTargeting, segmentsTargeting, urlTargeting);
+		this.addCss();
     }
 
     static createAdModal(trackingId) {
@@ -207,10 +226,7 @@ class modal {
         googletag.cmd = googletag.cmd || [];
 
         // GPT setup
-
-
         googletag.cmd.push(function () {
-
             let mapping = googletag.sizeMapping().addSize([1290, 0], [970, 250]).addSize([0, 0], [300, 250]).build();
             googletag.defineSlot(adService, mapping, self.prototype.adSlotId).defineSizeMapping(mapping).addService(googletag.pubads());
             googletag.pubads().setCentering(true);

@@ -12,17 +12,13 @@
     <!-- There's no need to load GTP dynamically -->
     <script type="text/javascript" src="https://www.googletagservices.com/tag/js/gpt.js"></script>
 
-
     <!-- Load modal source. The unminified version is /lib/modal.js -->
     <script type="text/javascript" src="/lib/modal.min.js"></script>
+
     <!-- Init modal values -->
     <script>
         jQuery(function ($) {
-            modal.init('//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js', [{
-                code: "ad-1",
-                mediaTypes: {banner: {sizes: [[300, 250], [970, 250]]}},
-                bids: [{bidder: "appnexus", params: {placementId: 13144370}}]
-            }], '/33049290/PIANO', ["cars", "trains"], ["alpha-1", "beta-2"], "http://example.com", "http://thechive.com/subscribe");
+            modal.init(["cars", "trains"], ["alpha-1", "beta-2"], "http://example.com", "http://thechive.com/subscribe");
         });
     </script>
 
