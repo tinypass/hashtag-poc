@@ -7,9 +7,9 @@ class modal {
         this.prototype.adSlotId = 'ppb-ad-1';
         this.prototype.externalEventId = 'offer-join-now';
         this.prototype.subscribeLink = subscribeLink;
-		const pbjsSrc = 's3.amazonaws.com/piano-prebid/piano/pbjs_piano.js';
+		const pbjsSrc = '//s3.amazonaws.com/piano-prebid/piano/pbjs_piano.js';
 		const adUnits = [{
-			code: "ad-1",
+			code: "ppb-ad-1",
             mediaTypes: {banner: {sizes: [[300, 250], [970, 250]]}},
             bids: [{
                 bidder: "appnexus",
