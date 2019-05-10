@@ -79,3 +79,7 @@
 }
 
 .overflow-hidden { overflow: hidden; }
+
+body.tp-backdrop.tp-active {
+    display: none;
+}
