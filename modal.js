@@ -123,7 +123,7 @@ class modal {
 
     _initAdServer() {
         let self = this;
-        if (pbjs_piano.initAdserverSet) return;
+        // if (pbjs_piano.initAdserverSet) return;
         pbjs_piano.initAdserverSet = true;
         googletag.cmd.push(function () {
             pbjs_piano.que.push(function () {
